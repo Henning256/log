@@ -368,6 +368,21 @@ class LogManager implements LoggerInterface
             $config['handler_with'] ?? []
         );
 
+        if (array_key_exists('handler_channel', $with)) {
+            $channel = $this->get($with['handler_channel']);
+            if ($channel) {
+                if (! is_a($channel, Monolog::class)) {
+                    throw new InvalidArgumentException(
+                        'channel_handler '.$with['handler_channel'].' must be an instance of '.Monolog::class
+                    );
+                }
+                $handlers = $channel->getHandlers();
+                if (isset($handlers[0])) {
+                    $with['handler'] = $handlers[0];
+                }
+            }
+        }
+
         return new Monolog($this->parseChannel($config), [$this->prepareHandler(
             $this->app->make($config['handler'], $with), $config
         )]);
